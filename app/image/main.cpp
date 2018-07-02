@@ -2,6 +2,7 @@
 #include <iostream>
 #include <QApplication>
 #include "Dataset.h"
+#include "CameraManager.h"
 #include "Window.h"
 
 int main(int num_args, char** args)
@@ -16,17 +17,20 @@ int main(int num_args, char** args)
 
     std::shared_ptr<Dataset> dataset = std::make_shared<Dataset>();
 
-    if( dataset->init(args[1]) == false )
-    {
-        std::cout << "Path not found." << std::endl;
-        return 1;
-    }
+    dataset->init(args[1]);
+
+    std::unique_ptr<CameraManager> cm( new CameraManager() );
 
     Window* w = new Window(dataset);
 
     w->show();
 
     const int ret = app.exec();
+
+    delete w;
+
+    dataset.reset();
+    cm.reset();
 
     return ret;
 }

@@ -5,7 +5,7 @@
 #include "Dataset.h"
 
 class QLineEdit;
-class QTextEdit;
+class QPlainTextEdit;
 
 class Window : public QWidget
 {
@@ -24,5 +24,5 @@ protected slots:
 protected:
 
     std::shared_ptr<Dataset> _dataset;
-    QTextEdit* _wtext;
+    QPlainTextEdit* _wtext;
 };

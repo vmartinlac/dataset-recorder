@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Dataset.h"
 
 Category::Category(
@@ -36,15 +37,27 @@ bool Dataset::init(const QString& path)
 
     if( _dir.cd(path) == false )
     {
+        std::cerr << "Dataset path not found !" << std::endl;
+
         return false;
     }
-
-    QStringList content = _dir.entryList({}, QDir::Dirs|QDir::NoDotAndDotDot);
-
-    for(QString& s : content)
+    else
     {
-        _categories.emplace_back( s, _dir.absoluteFilePath(s) );
-    }
+        QStringList content = _dir.entryList({}, QDir::Dirs|QDir::NoDotAndDotDot);
 
-    return ( _categories.empty() == false );
+        for(QString& s : content)
+        {
+            _categories.emplace_back( s, _dir.absoluteFilePath(s) );
+        }
+
+        if ( _categories.empty() )
+        {
+            return true;
+        }
+        else
+        {
+            std::cerr << "No category in dataset !" << std::endl;
+            return false;
+        }
+    }
 }

@@ -1,9 +1,8 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QTextEdit>
+#include <QPlainTextEdit>
 #include <QLabel>
 #include <iostream>
-#include <opencv2/opencv.hpp>
 #include "Window.h"
 
 Window::Window(
@@ -12,24 +11,39 @@ Window::Window(
     _dataset(std::move(dataset)),
     QWidget(parent)
 {
-    QLabel* l = new QLabel();
-    l->setText("Project path : " + _dataset->getPath() );
-
-    _wtext = new QTextEdit();
+    _wtext = new QPlainTextEdit();
     _wtext->setReadOnly(true);
 
-    QHBoxLayout* hl = new QHBoxLayout();
-    hl->addWidget(_wtext);
+    QHBoxLayout* lay = new QHBoxLayout();
+    lay->addWidget(_wtext);
 
-    QVBoxLayout* mainl = new QVBoxLayout();
-    mainl->addWidget(l);
-    mainl->addLayout(hl);
-
-    setLayout(mainl);
+    setLayout(lay);
     setWindowTitle("Make an image dataset");
+
+    refreshStats();
 }
 
 void Window::refreshStats()
 {
-    ;
+    QString txt;
+
+    int total = 0;
+    int index = 1;
+
+    txt += "Project path : " + _dataset->getPath() + "\n";
+    txt += "\n";
+
+    txt += "Categories :\n";
+    for( Category& c : _dataset->getCategories() )
+    {
+        txt += "[" + QString::number(index) + "] ";
+        txt += c.getName();
+        txt += " (" + QString::number(c.getNumSamples()) + " samples )\n";
+        index++;
+    }
+
+    txt += "\n";
+    txt += "Total : " + QString::number(total) + " samples.";
+
+    _wtext->setPlainText(txt);
 }
