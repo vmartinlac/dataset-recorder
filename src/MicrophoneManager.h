@@ -36,8 +36,9 @@ protected:
 protected:
 
     static MicrophoneManager* m_instance;
-    PaStream* m_stream;
     std::vector<Device> m_devices;
+    PaStream* m_stream;
+    QString m_output_filename;
     CallbackData m_callback_data;
 
 protected:

@@ -66,6 +66,8 @@ signals:
 
     void category_changed();
 
+    void sensor_added_sample();
+
 protected slots:
 
     void dataset_open();

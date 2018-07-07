@@ -83,6 +83,7 @@ QGroupBox* Window::create_category_groupbox()
     QAction* category_add = category_toolbar->addAction("Add");
     QAction* category_rename = category_toolbar->addAction("Rename");
     QAction* category_remove = category_toolbar->addAction("Remove");
+    QAction* category_update = category_toolbar->addAction("Update");
 
     category_toolbar->setOrientation(Qt::Vertical);
     category_main_layout->addWidget(category_list);
@@ -97,6 +98,8 @@ QGroupBox* Window::create_category_groupbox()
     connect( category_remove, &QAction::triggered, this, &Window::category_remove);
     connect( category_list, &QListWidget::currentItemChanged, this, &Window::category_changed );
     connect( this, &Window::dataset_path_changed, this, &Window::category_update_list );
+    //connect( this, &Window::sensor_added_sample, this, &Window::category_update_list );
+    connect( category_update, &QAction::triggered, this, &Window::category_update_list );
 
     return category_groupbox;
 }
@@ -129,6 +132,7 @@ QGroupBox* Window::create_sample_groupbox()
     connect( this, &Window::dataset_kind_changed, this, &Window::sample_update_next_filename );
     connect( this, &Window::category_changed, this, &Window::sample_update_next_filename );
     connect( this, &Window::category_changed, this, &Window::sample_update_category );
+    connect( this, &Window::sensor_added_sample, this, &Window::sample_update_next_filename );
 
     return sample_groupbox;
 }
@@ -317,11 +321,12 @@ void Window::sensor_toggle_record_sound(bool rec)
 {
     if(rec)
     {
-        const bool ret = m_microphone->startRecording( m_sample_next_filename->text() );
-        if(ret == false)
+        QString fname = m_sample_next_filename->text();
+
+        if( fname.isEmpty() || m_microphone->startRecording(m_sample_next_filename->text()) == false )
         {
-            //QMessageBox::critical(this, "Error", "Failed !");
             std::cerr << "failed to start recording !" << std::endl;
+            QMessageBox::critical(this, "Error", "Failed !");
         }
     }
     else
@@ -331,6 +336,7 @@ void Window::sensor_toggle_record_sound(bool rec)
         {
             QMessageBox::critical(this, "Error", "Failed !");
         }
+        sensor_added_sample();
     }
 }
 

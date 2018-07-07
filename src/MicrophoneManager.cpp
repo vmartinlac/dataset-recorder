@@ -67,9 +67,44 @@ bool MicrophoneManager::stopRecording()
     {
         const PaError ret1 = Pa_StopStream(m_stream);
 
-        // TODO : write buffer to file !
+        if( ret1 != paNoError )
+        {
+            return false;
+        }
+        else
+        {
+            SF_INFO info;
 
-        return ( ret1 == paNoError );
+            info.frames = m_callback_data.buffer.size();
+            info.samplerate = int(Pa_GetStreamInfo(m_stream)->sampleRate);
+            info.channels = 1;
+            info.format = SF_FORMAT_WAV|SF_FORMAT_FLOAT;
+            info.sections = 0;
+            info.seekable = 0;
+
+            SNDFILE* file = sf_open( m_output_filename.toLocal8Bit().data(), SFM_WRITE, &info );
+
+            if(file == nullptr)
+            {
+                std::cerr << sf_strerror(nullptr) << std::endl;
+                return false;
+            }
+            else
+            {
+                sf_write_float( file, &m_callback_data.buffer.front(), m_callback_data.start );
+                const int ret = sf_close(file);
+
+                if(ret == 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    std::cerr << sf_error_number(ret) << std::endl;
+                    return false;
+                }
+            }
+        }
     }
     else
     {
@@ -130,17 +165,31 @@ bool MicrophoneManager::openMicrophone(int id)
 
 bool MicrophoneManager::startRecording(const QString& destination_file)
 {
-    bool ret = false;
+    bool is_ok = true;
 
-    if( m_stream != nullptr)
+    if(is_ok)
     {
+        is_ok = m_stream != nullptr;
+    }
+
+    if(is_ok)
+    {
+        if( Pa_IsStreamActive(m_stream) )
+        {
+            is_ok = stopRecording();
+        }
+    }
+
+    if( is_ok )
+    {
+        m_output_filename = destination_file;
         m_callback_data.buffer.resize(60*44100);
         m_callback_data.start = 0;
 
-        ret = ( Pa_StartStream(m_stream) == paNoError );
+        is_ok = ( Pa_StartStream(m_stream) == paNoError );
     }
 
-    return ret;
+    return is_ok;
 }
 
 void MicrophoneManager::closeMicrophone()

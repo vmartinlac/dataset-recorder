@@ -39,7 +39,7 @@ int Dataset::getNumSamplesInCategory(int id)
 {
     if(m_valid)
     {
-        return m_categories[id].entryList(QDir::NoDotAndDotDot).size();
+        return m_categories[id].entryList(QDir::Files).size();
     }
     else
     {
