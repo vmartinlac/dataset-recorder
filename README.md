@@ -1,9 +1,12 @@
 Machine Learning Dataset Helper
 ===============================
 
-The purpose of this program is to facilitate the generation of datasets for machine learning.
+This program helps create labelled dataset by recording sounds or images.
 
 Dependencies :
-* libsoundio
-* Vimba API (from Allied Vision)
+
 * Qt5
+* portaudio
+* libsndfile
+* Vimba API (from Allied Vision SDK)
+

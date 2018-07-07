@@ -12,13 +12,23 @@ int MicrophoneManager::callback(
     void* user_data)
 {
     CallbackData* data = static_cast<CallbackData*>(user_data);
+    const float* array = static_cast<const float*>(input);
+
+    unsigned long i=0;
+    while( i < frame_count && data->start < data->buffer.size() )
+    {
+        data->buffer[data->start] = array[i];
+        i++;
+        data->start++;
+    }
+
+    return paContinue;
 }
 
 MicrophoneManager* MicrophoneManager::m_instance = nullptr;
 
 MicrophoneManager::MicrophoneManager() :
-    m_stream(nullptr),
-    m_callback_data({nullptr})
+    m_stream(nullptr)
 {
     if(m_instance != nullptr) abort();
     m_instance = this;
@@ -47,25 +57,24 @@ MicrophoneManager::~MicrophoneManager()
 
     Pa_Terminate();
 
-    if( m_callback_data.file != nullptr)
-    {
-        std::cerr << "Warning ! Some output sound file was not closed !" << std::endl;
-        sf_close(m_callback_data.file);
-        m_callback_data.file = nullptr;
-    }
-
     if(m_instance != this) abort();
     m_instance = nullptr;
 }
 
 bool MicrophoneManager::stopRecording()
 {
-    const PaError ret1 = Pa_StopStream(m_stream);
+    if( m_stream != nullptr && Pa_IsStreamActive(m_stream) )
+    {
+        const PaError ret1 = Pa_StopStream(m_stream);
 
-    const int ret2 = sf_close(m_callback_data.file);
-    m_callback_data.file = nullptr;
+        // TODO : write buffer to file !
 
-    return ( ret1 == paNoError && ret2 == 0 );
+        return ( ret1 == paNoError );
+    }
+    else
+    {
+        return true;
+    }
 }
 
 int MicrophoneManager::getNumMicrophones()
@@ -125,32 +134,21 @@ bool MicrophoneManager::startRecording(const QString& destination_file)
 
     if( m_stream != nullptr)
     {
-        SF_INFO info;
+        m_callback_data.buffer.resize(60*44100);
+        m_callback_data.start = 0;
 
-        //
-        throw;
-        /*
-        info.frames
-        info.samplerate = 
-        info.channels = 1;
-        info.format = SF_FORMAT_WAV;
-        info.sections = 0; // TODO
-        info.seekable = 0;
-        */
-
-        m_callback_data.file = sf_open(destination_file.toLocal8Bit().data(), SFM_WRITE, &info);
-
-        if(m_callback_data.file != nullptr)
-        {
-            ret = ( Pa_StartStream(m_stream) == paNoError );
-        }
+        ret = ( Pa_StartStream(m_stream) == paNoError );
     }
+
+    return ret;
 }
 
 void MicrophoneManager::closeMicrophone()
 {
     if( m_stream != nullptr )
     {
+        stopRecording();
+
         Pa_CloseStream(m_stream);
         m_stream = nullptr;
     }

@@ -3,7 +3,6 @@
 #include <QString>
 #include <vector>
 #include <portaudio.h>
-#include <sndfile.h>
 
 class MicrophoneManager
 {
@@ -30,7 +29,8 @@ protected:
 
     struct CallbackData
     {
-        SNDFILE* file;
+        size_t start;
+        std::vector<float> buffer;
     };
 
 protected:
