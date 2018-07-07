@@ -3,7 +3,9 @@
 #include <QWidget>
 #include <memory>
 #include "Dataset.h"
+#include "MicrophoneManager.h"
 
+class QStackedLayout;
 class QButtonGroup;
 class QListWidget;
 class QLineEdit;
@@ -37,7 +39,12 @@ protected:
     QLineEdit* m_sample_prefix;
     QLabel* m_sample_category;
 
+    QStackedLayout* m_sensor_stacked_layout;
+    QWidget* m_sensor_image;
+    QWidget* m_sensor_sound;
+
     std::unique_ptr<Dataset> m_dataset;
+    std::unique_ptr<MicrophoneManager> m_microphone;
 
 protected:
 
@@ -69,4 +76,8 @@ protected slots:
 
     void sample_update_next_filename();
     void sample_update_category();
+
+    void sensor_switch();
+    void sensor_toggle_record_sound(bool);
 };
+

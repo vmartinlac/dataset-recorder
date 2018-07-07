@@ -1,4 +1,5 @@
 #include <QMessageBox>
+#include <QComboBox>
 #include <QInputDialog>
 #include <QLabel>
 #include <QGridLayout>
@@ -31,7 +32,7 @@ QGroupBox* Window::create_dataset_groupbox()
     QLabel* dataset_size = new QLabel("N/A");
 
     dataset_path->setReadOnly(true);
-    dataset_sound->setChecked(true);
+    dataset_image->setChecked(true);
     dataset_kind_group->addButton(dataset_image, ID_IMAGE);
     dataset_kind_group->addButton(dataset_sound, ID_SOUND);
     dataset_path_layout->addWidget(dataset_path, 1);
@@ -136,12 +137,19 @@ QGroupBox* Window::create_sensor_groupbox()
 {
     QGroupBox* sensor_groupbox = new QGroupBox();
     QStackedLayout* sensor_stackedlayout = new QStackedLayout();
+    QWidget* sensor_image = create_image_widget();
+    QWidget* sensor_sound = create_sound_widget();
 
     sensor_groupbox->setTitle("Sensor");
     sensor_groupbox->setLayout(sensor_stackedlayout);
+    sensor_stackedlayout->addWidget( sensor_image );
+    sensor_stackedlayout->addWidget( sensor_sound );
 
-    sensor_stackedlayout->addWidget( create_image_widget() );
-    sensor_stackedlayout->addWidget( create_sound_widget() );
+    m_sensor_stacked_layout = sensor_stackedlayout;
+    m_sensor_image = sensor_image;
+    m_sensor_sound = sensor_sound;
+
+    connect( this, &Window::dataset_kind_changed, this, &Window::sensor_switch );
 
     return sensor_groupbox;
 }
@@ -149,6 +157,7 @@ QGroupBox* Window::create_sensor_groupbox()
 Window::Window(QWidget* parent) : QWidget(parent)
 {
     m_dataset.reset( new Dataset() );
+    m_microphone.reset( new MicrophoneManager() );
 
     QGridLayout* l = new QGridLayout();
     l->addWidget(create_dataset_groupbox(), 0, 0);
@@ -274,12 +283,67 @@ int Window::get_current_category()
 
 QWidget* Window::create_image_widget()
 {
-    return new QWidget();
+    QVBoxLayout* layout = new QVBoxLayout();
+    QWidget* widget = new QWidget;
+    QComboBox* box = new QComboBox();
+    QPushButton* create_sample_btn = new QPushButton("TAKE PICTURE");
+
+    layout->setAlignment(Qt::AlignTop);
+    layout->addWidget(box);
+    layout->addWidget(create_sample_btn);
+    box->addItem("Allied Vision Manta G125C GigE");
+    box->addItem("Point Grey ...");
+    widget->setLayout(layout);
+
+    return widget;
+}
+
+void Window::sensor_switch()
+{
+    m_microphone->stopRecording();
+
+    if( m_dataset_kind->checkedId() == ID_IMAGE )
+    {
+        m_sensor_stacked_layout->setCurrentWidget( m_sensor_image );
+    }
+    else
+    {
+        m_sensor_stacked_layout->setCurrentWidget( m_sensor_sound );
+    }
+}
+
+void Window::sensor_toggle_record_sound(bool rec)
+{
+    if(rec)
+    {
+        ;
+    }
+    else
+    {
+        ;
+    }
 }
 
 QWidget* Window::create_sound_widget()
 {
-    return new QWidget();
+    QWidget* widget = new QWidget();
+    QVBoxLayout* layout = new QVBoxLayout();
+    QComboBox* source = new QComboBox();
+    QPushButton* btn_record = new QPushButton("RECORD");
+
+    for(int i=0; i<m_microphone->getNumMicrophones(); i++)
+    {
+        source->addItem( m_microphone->getMicrophoneName(i), i );
+    }
+
+    layout->setAlignment(Qt::AlignTop);
+    layout->addWidget(source);
+    layout->addWidget(btn_record);
+    widget->setLayout(layout);
+
+    connect( btn_record, &QPushButton::clicked, this, &Window::sensor_toggle_record_sound );
+
+    return widget;
 }
 
 void Window::sample_update_category()
