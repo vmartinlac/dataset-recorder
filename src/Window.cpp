@@ -300,10 +300,11 @@ QWidget* Window::create_image_widget()
 
 void Window::sensor_switch()
 {
-    m_microphone->stopRecording();
 
     if( m_dataset_kind->checkedId() == ID_IMAGE )
     {
+        m_microphone->stopRecording();
+        m_microphone->closeMicrophone();
         m_sensor_stacked_layout->setCurrentWidget( m_sensor_image );
     }
     else
@@ -316,11 +317,33 @@ void Window::sensor_toggle_record_sound(bool rec)
 {
     if(rec)
     {
-        ;
+        const bool ret = m_microphone->startRecording( m_sample_next_filename->text() );
+        if(ret == false)
+        {
+            //QMessageBox::critical(this, "Error", "Failed !");
+            std::cerr << "failed to start recording !" << std::endl;
+        }
     }
     else
     {
-        ;
+        const bool ret = m_microphone->stopRecording();
+        if(ret == false)
+        {
+            QMessageBox::critical(this, "Error", "Failed !");
+        }
+    }
+}
+
+void Window::sensor_select_microphone()
+{
+    QVariant data = m_sensor_microphone->currentData();
+    if(data.isValid())
+    {
+        const bool ret = m_microphone->openMicrophone( data.toInt() );
+        if(ret == false)
+        {
+            std::cerr << "Could not open microphone !" << std::endl;
+        }
     }
 }
 
@@ -336,12 +359,16 @@ QWidget* Window::create_sound_widget()
         source->addItem( m_microphone->getMicrophoneName(i), i );
     }
 
+    btn_record->setCheckable(true);
     layout->setAlignment(Qt::AlignTop);
     layout->addWidget(source);
     layout->addWidget(btn_record);
     widget->setLayout(layout);
 
+    m_sensor_microphone = source;
+
     connect( btn_record, &QPushButton::clicked, this, &Window::sensor_toggle_record_sound );
+    connect( source, SIGNAL(currentIndexChanged(int)), this, SLOT(sensor_select_microphone()) );
 
     return widget;
 }

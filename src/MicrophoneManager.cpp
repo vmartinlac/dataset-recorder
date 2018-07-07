@@ -43,6 +43,8 @@ MicrophoneManager::MicrophoneManager() :
 
 MicrophoneManager::~MicrophoneManager()
 {
+    closeMicrophone();
+
     Pa_Terminate();
 
     if( m_callback_data.file != nullptr)
@@ -80,17 +82,15 @@ bool MicrophoneManager::openMicrophone(int id)
 {
     closeMicrophone();
 
+    if( id < 0 || id >= m_devices.size() )
+        return false;
+
     const PaDeviceInfo* info = Pa_GetDeviceInfo(m_devices[id].index);
 
     if(info == nullptr)
         return false;
 
     PaStreamParameters parameters;
-
-    // TMP TODO
-    std::cout << info->defaultHighInputLatency << std::endl;
-    std::cout << info->defaultLowInputLatency << std::endl;
-    //
 
     parameters.device = m_devices[id].index;
     parameters.channelCount = 1;
@@ -121,9 +121,30 @@ bool MicrophoneManager::openMicrophone(int id)
 
 bool MicrophoneManager::startRecording(const QString& destination_file)
 {
-    // TODO : complete adequate fields in 
-    const PaError ret = Pa_StartStream(m_stream);
-    return (ret == paNoError);
+    bool ret = false;
+
+    if( m_stream != nullptr)
+    {
+        SF_INFO info;
+
+        //
+        throw;
+        /*
+        info.frames
+        info.samplerate = 
+        info.channels = 1;
+        info.format = SF_FORMAT_WAV;
+        info.sections = 0; // TODO
+        info.seekable = 0;
+        */
+
+        m_callback_data.file = sf_open(destination_file.toLocal8Bit().data(), SFM_WRITE, &info);
+
+        if(m_callback_data.file != nullptr)
+        {
+            ret = ( Pa_StartStream(m_stream) == paNoError );
+        }
+    }
 }
 
 void MicrophoneManager::closeMicrophone()

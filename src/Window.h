@@ -5,6 +5,7 @@
 #include "Dataset.h"
 #include "MicrophoneManager.h"
 
+class QComboBox;
 class QStackedLayout;
 class QButtonGroup;
 class QListWidget;
@@ -42,6 +43,7 @@ protected:
     QStackedLayout* m_sensor_stacked_layout;
     QWidget* m_sensor_image;
     QWidget* m_sensor_sound;
+    QComboBox* m_sensor_microphone;
 
     std::unique_ptr<Dataset> m_dataset;
     std::unique_ptr<MicrophoneManager> m_microphone;
@@ -79,5 +81,6 @@ protected slots:
 
     void sensor_switch();
     void sensor_toggle_record_sound(bool);
+    void sensor_select_microphone();
 };
 
