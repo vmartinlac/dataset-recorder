@@ -35,6 +35,7 @@ protected:
     QButtonGroup* m_dataset_kind;
 
     QListWidget* m_category_list;
+    QString m_category_name_pattern;
 
     QLineEdit* m_sample_next_filename;
     QLineEdit* m_sample_prefix;
@@ -78,6 +79,7 @@ protected slots:
     void category_clear();
     void category_remove();
     void category_update_list();
+    void category_update_sizes();
 
     void sample_update_next_filename();
     void sample_update_category();

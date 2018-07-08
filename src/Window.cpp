@@ -54,6 +54,7 @@ QGroupBox* Window::create_dataset_groupbox()
     connect(m_dataset_path, &QLineEdit::textChanged, this, &Window::dataset_path_changed);
     connect(m_dataset_kind, SIGNAL(buttonClicked(int)), this, SIGNAL(dataset_kind_changed()));
     connect( this, &Window::dataset_path_changed, this, &Window::dataset_update_total_size );
+    connect( this, &Window::sensor_added_sample, this, &Window::dataset_update_total_size );
 
     return grp_dataset;
 }
@@ -67,7 +68,7 @@ void Window::category_update_list()
         for(int i=0; i<m_dataset->getNumCategories(); i++)
         {
             QListWidgetItem* item = new QListWidgetItem();
-            item->setText( m_dataset->getCategoryName(i) + " (" + QString::number(m_dataset->getNumSamplesInCategory(i)) + " samples)" );
+            item->setText( m_category_name_pattern.arg(m_dataset->getCategoryName(i)).arg(m_dataset->getNumSamplesInCategory(i)) );
             item->setData( Qt::UserRole, i);
             m_category_list->addItem( item );
         }
@@ -100,10 +101,21 @@ QGroupBox* Window::create_category_groupbox()
     connect( category_remove, &QAction::triggered, this, &Window::category_remove);
     connect( category_list, &QListWidget::currentItemChanged, this, &Window::category_changed );
     connect( this, &Window::dataset_path_changed, this, &Window::category_update_list );
-    //connect( this, &Window::sensor_added_sample, this, &Window::category_update_list );
+    connect( this, &Window::sensor_added_sample, this, &Window::category_update_sizes );
     connect( category_update, &QAction::triggered, this, &Window::category_update_list );
+    connect( category_update, &QAction::triggered, this, &Window::dataset_update_total_size );
 
     return category_groupbox;
+}
+
+void Window::category_update_sizes()
+{
+    for(int i=0; i<m_category_list->count(); i++)
+    {
+        QListWidgetItem* item = m_category_list->item(i);
+        const int category = item->data(Qt::UserRole).toInt();
+        item->setText( m_category_name_pattern.arg(m_dataset->getCategoryName(category)).arg(m_dataset->getNumSamplesInCategory(category)) );
+    }
 }
 
 void Window::category_clear()
@@ -188,6 +200,7 @@ Window::Window(QWidget* parent) : QWidget(parent)
 {
     m_dataset.reset( new Dataset() );
     m_microphone.reset( new MicrophoneManager() );
+    m_category_name_pattern = "%1 (%2 samples)";
 
     QGridLayout* l = new QGridLayout();
     l->addWidget(create_dataset_groupbox(), 0, 0);
