@@ -85,7 +85,7 @@ QGroupBox* Window::create_category_groupbox()
     QAction* category_rename = category_toolbar->addAction("Rename");
     QAction* category_clear = category_toolbar->addAction("Clear");
     QAction* category_remove = category_toolbar->addAction("Remove");
-    QAction* category_update = category_toolbar->addAction("Update");
+    QAction* category_update = category_toolbar->addAction("Refresh");
 
     category_toolbar->setOrientation(Qt::Vertical);
     category_main_layout->addWidget(category_list);
