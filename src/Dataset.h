@@ -14,6 +14,7 @@ public:
     bool isValid() { return m_valid; }
 
     int getNumCategories();
+    bool clearCategory(int id);
     QString getCategoryName(int id);
     int getNumSamplesInCategory(int id);
     QString getNextSampleFilename(

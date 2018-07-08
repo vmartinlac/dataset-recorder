@@ -75,6 +75,7 @@ protected slots:
 
     void category_add();
     void category_rename();
+    void category_clear();
     void category_remove();
     void category_update_list();
 

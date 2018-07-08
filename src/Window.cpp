@@ -82,6 +82,7 @@ QGroupBox* Window::create_category_groupbox()
     QToolBar* category_toolbar = new QToolBar();
     QAction* category_add = category_toolbar->addAction("Add");
     QAction* category_rename = category_toolbar->addAction("Rename");
+    QAction* category_clear = category_toolbar->addAction("Clear");
     QAction* category_remove = category_toolbar->addAction("Remove");
     QAction* category_update = category_toolbar->addAction("Update");
 
@@ -95,6 +96,7 @@ QGroupBox* Window::create_category_groupbox()
 
     connect( category_add, &QAction::triggered, this, &Window::category_add);
     connect( category_rename, &QAction::triggered, this, &Window::category_rename);
+    connect( category_clear, &QAction::triggered, this, &Window::category_clear);
     connect( category_remove, &QAction::triggered, this, &Window::category_remove);
     connect( category_list, &QListWidget::currentItemChanged, this, &Window::category_changed );
     connect( this, &Window::dataset_path_changed, this, &Window::category_update_list );
@@ -102,6 +104,30 @@ QGroupBox* Window::create_category_groupbox()
     connect( category_update, &QAction::triggered, this, &Window::category_update_list );
 
     return category_groupbox;
+}
+
+void Window::category_clear()
+{
+    const int cat = get_current_category();
+
+    if(cat >= 0)
+    {
+        const int confirmation = QMessageBox::question(
+            this,
+            "Confirmation",
+            "Are you sure you want to clear the content of selected category ?",
+            QMessageBox::Yes|QMessageBox::No);
+
+        if( confirmation == QMessageBox::Yes )
+        {
+            const bool ret = m_dataset->clearCategory(cat);
+            category_update_list();
+            if(ret == false)
+            {
+                QMessageBox::critical(this, "Error", "Failed !");
+            }
+        }
+    }
 }
 
 QGroupBox* Window::create_sample_groupbox()
@@ -170,7 +196,7 @@ Window::Window(QWidget* parent) : QWidget(parent)
     l->addWidget(create_sensor_groupbox(), 0, 1, 3, 1);
 
     setLayout(l);
-    setWindowTitle("Data Acquirer");
+    setWindowTitle("Dataset Recorder");
 }
 
 void Window::dataset_open()

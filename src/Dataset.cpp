@@ -138,3 +138,17 @@ int Dataset::getTotalNumSamples()
 
     return count;
 }
+
+bool Dataset::clearCategory(int id)
+{
+    QStringList to_remove = m_categories[id].entryList( QDir::NoDotAndDotDot | QDir::Files );
+
+    bool ok = true;
+
+    for(QString name : to_remove)
+    {
+        ok = ok && m_categories[id].remove( name );
+    }
+
+    return ok;
+}
