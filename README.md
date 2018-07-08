@@ -1,7 +1,7 @@
-Machine Learning Dataset Helper
-===============================
+Dataset Recorder
+================
 
-This program helps create labelled dataset by recording sounds or images.
+This program helps create labelled datasets by recording sounds or images.
 
 Dependencies :
 
